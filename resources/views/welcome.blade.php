@@ -12,6 +12,6 @@
 
     </head>
     <body>
-       <h1>Basic Laravel Installation</h1>
+       <h1>Basic Laravel Installation: Branch Develop</h1>
     </body>
 </html>
