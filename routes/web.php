@@ -12,6 +12,6 @@
 */
 
 Route::get('/', [
-    'uses' => 'AppController',
+    'uses' => 'AppController@getDashboard',
     'as' => 'dashboard'
 ]);
