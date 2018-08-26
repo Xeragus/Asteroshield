@@ -72,6 +72,7 @@
                         <td>{{ $asteroid['absolute_magnitude_h'] }}</td>
                         <td>{{ $asteroid['estimated_diameter']['kilometers']['estimated_diameter_min'] }}</td>
                         <td>{{ $asteroid['estimated_diameter']['kilometers']['estimated_diameter_max'] }}</td>
+                        
                         @if ($asteroid['is_potentially_hazardous_asteroid'])
                             <td>Yes</td>
                         @else
