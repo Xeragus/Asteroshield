@@ -22,7 +22,7 @@ class AppController extends Controller
         $data = array();
         $this->getAPODdata($api_key, $client, $data);
         $this->getNEOdata($api_key, $client, $data);
-        //return view('welcome', ['data' => $data]);
+        return view('welcome', ['data' => $data]);
     }
 
     /**
@@ -42,14 +42,15 @@ class AppController extends Controller
         $start_date = date("Y-m-d");
         $end_date = $this->calculateEndDate($start_date);
         $api_endpoint = 'https://api.nasa.gov/neo/rest/v1/feed?start_date=' . $start_date . '&end_date=' . $end_date . '&api_key=' . $api_key;
-        $data['endpoint'] = $api_endpoint;
         $response = $client->request('GET', $api_endpoint);
         $neos_array = json_decode($response->getBody(), true);
         $neos = $neos_array['near_earth_objects'];
         $data['neo_total_count'] = $neos_array['element_count'];
         $data['neo_hazardous_count'] = $this->getHazardous($neos);
-        $data['neo_biggest_asteroids'] = $this->getXBiggest($neos);
-        // $data['neo_smallest_asteroids'] = $this->getXSmallest($api_key, $client, $data);
+        $data['neo_biggest_asteroids'] = array_slice($this->sortBySize($neos, 1), 0, 5, true);
+        $data['neo_smallest_asteroids'] = array_slice($this->sortBySize($neos, 0), -5, 5, true);
+        // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 1), 0, 5, true);
+        // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 0), -5, 5, true);
     }
 
     /**
@@ -79,9 +80,34 @@ class AppController extends Controller
     }
 
      /**
-     * Returns a list of 5 biggest asteroids
+     * Returns sorted array of asteroids by size - in descending order (if $desc is set)
+     * The average of the min and max diameter determines the size of an asteroid
      */
-    public function getXBiggest($neos) {
-        dd($neos);
+    public function sortBySize($neos, $desc) {
+        $biggestX_obj = $this->getAsteroids($neos);
+        uasort($biggestX_obj, function($a, $b) use($desc) {
+            $a_diameter_average = ($a['estimated_diameter']['kilometers']['estimated_diameter_min'] + $a['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
+            $b_diameter_average = ($b['estimated_diameter']['kilometers']['estimated_diameter_min'] + $b['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
+            if ($a_diameter_average == $b_diameter_average) 
+                return 0;
+            if($desc)
+                return ($a_diameter_average > $b_diameter_average) ? -1 : 1;        
+            return ($a_diameter_average > $b_diameter_average) ? 1 : -1;    
+        });
+        return $biggestX_obj;
+    }
+    
+    /**
+     * Accepts the NEOs data
+     * Returns an array with key: reference_id, value: neo_object_array
+     */
+    public function getAsteroids($neos) {
+        $asteroids = array();
+        foreach($neos as $neo_group) {
+            foreach($neo_group as $key => $neo) {
+                $asteroids[$neo['neo_reference_id']] = $neo;
+            }
+        }
+        return $asteroids;
     }
 }
