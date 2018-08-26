@@ -16,3 +16,12 @@
     left: 50%;
     transform: translate(-50%,-50%);
 }
+.data-wrapper {
+    background: #f8f8f8;
+}
+thead {
+    font-size: 15px;
+}
+tbody {
+    font-size: 13px;
+}
