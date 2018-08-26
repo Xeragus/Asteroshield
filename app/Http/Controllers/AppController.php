@@ -48,7 +48,7 @@ class AppController extends Controller
         $data['neo_total_count'] = $neos_array['element_count'];
         $data['neo_hazardous_count'] = $this->getHazardous($neos);
         $data['neo_biggest_asteroids'] = array_slice($this->sortBySize($neos, 1), 0, 5, true);
-        $data['neo_smallest_asteroids'] = array_slice($this->sortBySize($neos, 0), -5, 5, true);
+        $data['neo_smallest_asteroids'] = array_slice($this->sortBySize($neos, 0), 0, 5, true);
         // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 1), 0, 5, true);
         // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 0), -5, 5, true);
     }
