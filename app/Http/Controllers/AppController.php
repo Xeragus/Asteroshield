@@ -3,9 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use GuzzleHttp\Client;
 use DateTime;
 use DateInterval;
+
+global $neos;
+define("api_key", "1XMXCWStyLOtOWaGPIYs4zlzSvl8QE4pmfA9p7W9");
+global $data;
+$data = array();
 
 class AppController extends Controller
 {
@@ -17,11 +23,11 @@ class AppController extends Controller
      */
     public function getDashboard(Request $request)
     {   
-        $api_key = "1XMXCWStyLOtOWaGPIYs4zlzSvl8QE4pmfA9p7W9";
-        $client = new Client();
-        $data = array();
-        $this->getAPODdata($api_key, $client, $data);
-        $this->getNEOdata($api_key, $client, $data);
+
+        // $this->getAPODdata($client, $data);
+        
+        $this->getNEOdata();
+        global $data;
         return view('welcome', ['data' => $data]);
     }
 
@@ -29,28 +35,40 @@ class AppController extends Controller
      * Accepts the api_key, the Guzzle HTTP client and the data array
      * Uses the NASA APOD API to get the Astronomy Picture of the Day
      */
-    public function getAPODdata($api_key, $client, &$data) {
-        $response = $client->request('GET', 'https://api.nasa.gov/planetary/apod?api_key=' . $api_key);
-        $apod_body_array = json_decode($response->getBody(), true);
-        $data['apod_bg_url'] = $apod_body_array['hdurl'];
+    // public function getAPODdata($client, &$data) {
+    //     $response = $client->request('GET', 'https://api.nasa.gov/planetary/apod?api_key=' . api_key);
+    //     $apod_body_array = json_decode($response->getBody(), true);
+    //     $data['apod_bg_url'] = $apod_body_array['hdurl'];
+    // }
+
+    /**
+     * Returns an array of near-Earth objects
+     */
+    public function callAPI() {
+        $client = new Client();
+        $start_date = date("Y-m-d");
+        $end_date = $this->calculateEndDate($start_date);
+        $api_endpoint = 'https://api.nasa.gov/neo/rest/v1/feed?start_date=' . $start_date . '&end_date=' . $end_date . '&api_key=' . api_key;
+        $response = $client->request('GET', $api_endpoint);
+        return json_decode($response->getBody(), true);
     }
 
     /**
      * Uses the NASA NEO feed which works with maximum of 7 days intervals
      */
-    public function getNEOdata($api_key, $client, &$data) {
-        $start_date = date("Y-m-d");
-        $end_date = $this->calculateEndDate($start_date);
-        $api_endpoint = 'https://api.nasa.gov/neo/rest/v1/feed?start_date=' . $start_date . '&end_date=' . $end_date . '&api_key=' . $api_key;
-        $response = $client->request('GET', $api_endpoint);
-        $neos_array = json_decode($response->getBody(), true);
+    public function getNEOdata() {
+        global $neos;
+        global $data;
+        $neos_array = $this->callAPI();
         $neos = $neos_array['near_earth_objects'];
         $data['neo_total_count'] = $neos_array['element_count'];
         $data['neo_hazardous_count'] = $this->getHazardous($neos);
-        $data['neo_biggest_asteroids'] = array_slice($this->sortBySize($neos, 1), 0, 5, true);
-        $data['neo_smallest_asteroids'] = array_slice($this->sortBySize($neos, 0), 0, 5, true);
-        $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 1), 0, 5, true);
-        $data['neo_slowest_asteroids'] = array_slice($this->sortByVelocity($neos, 0), 0, 5, true);
+        $data['neo_biggest_asteroids'] = array_slice($this->sortBySize(1), 0, 5, true);
+        $data['neo_smallest_asteroids'] = array_slice($this->sortBySize(0), 0, 5, true);
+        $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity(1), 0, 5, true);
+        $data['neo_slowest_asteroids'] = array_slice($this->sortByVelocity(0), 0, 5, true);
+        $data['neo_asteroids_by_diameter'] = $this->getAsteroidsByDiameter(0.2);
+        $data['neo_asteroids_by_velocity'] = $this->getAsteroidsByVelocity(19.48);
     }
 
     /**
@@ -67,7 +85,8 @@ class AppController extends Controller
      * Accepts array of Near-Earth Objects as parameter
      * Returns the number of hazardous asteroids from the accepted parameter array
      */
-    public function getHazardous($neos) {
+    public function getHazardous() {
+        global $neos;
         $count = 0;
         foreach($neos as $neo_group) {
             foreach($neo_group as $key => $neo) {
@@ -81,18 +100,17 @@ class AppController extends Controller
 
      /**
      * Returns sorted array of asteroids by size - in descending order (if $desc is set)
-     * The average of the min and max diameter determines the size of an asteroid
+     * The size of the asteroid depends on its absolute magnitude
      */
-    public function sortBySize($neos, $desc) {
+    public function sortBySize($desc) {
+        global $neos;
         $sortedBySize = $this->getAsteroids($neos);
         uasort($sortedBySize, function($a, $b) use($desc) {
-            $a_diameter_average = ($a['estimated_diameter']['kilometers']['estimated_diameter_min'] + $a['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
-            $b_diameter_average = ($b['estimated_diameter']['kilometers']['estimated_diameter_min'] + $b['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
-            if ($a_diameter_average == $b_diameter_average) 
+            if ($a['absolute_magnitude_h'] == $b['absolute_magnitude_h']) 
                 return 0;
             if($desc)
-                return ($a_diameter_average > $b_diameter_average) ? -1 : 1;        
-            return ($a_diameter_average > $b_diameter_average) ? 1 : -1;    
+                return ($a['absolute_magnitude_h'] > $b['absolute_magnitude_h']) ? -1 : 1;        
+            return ($a['absolute_magnitude_h'] > $b['absolute_magnitude_h']) ? 1 : -1;    
         });
         return $sortedBySize;
     }
@@ -100,7 +118,8 @@ class AppController extends Controller
     /**
      * Returns sorted array of asteroids by velocity - in descending order (if $desc is set)
      */
-    public function sortByVelocity($neos, $desc) {
+    public function sortByVelocity($desc) {
+        global $neos;
         $sortedByVelocity = $this->getAsteroids($neos);
         uasort($sortedByVelocity, function($a, $b) use($desc) {
             $a_velocity = $a['close_approach_data'][0]['relative_velocity']['kilometers_per_second'];
@@ -117,20 +136,104 @@ class AppController extends Controller
     /**
      * Returns a list of asteroids that have a diameter bigger or equal to $diameter km
      */
-    public function getAsteroidsByDiameter($neos, $diameter) {
-        // $asteroids = $this->getAsteroids($neos);
-        $filtered_asteroids array_filter($this->getAsteroids($neos), function($value) use ($diameter) {
-            $a_diameter_average = ($a['estimated_diameter']['kilometers']['estimated_diameter_min'] + $a['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
-            return $value[]
+    public function getAsteroidsByDiameter($diameter) {
+        global $neos;
+        $filtered_asteroids = array_filter($this->getAsteroids($neos), function($value) use ($diameter) {
+            $average_diameter = ($value['estimated_diameter']['kilometers']['estimated_diameter_min'] + $value['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
+            return $average_diameter > $diameter;
+        });        
+        return $filtered_asteroids;
+    }
+
+    /**
+     * Returns a list of asteorids that have a velocity of more than $velocity km/s
+     */
+    public function getAsteroidsByVelocity($velocity) {
+        global $neos;
+        $filtered_asteroids = array_filter($this->getAsteroids($neos), function($value) use ($velocity) {
+            return $value['close_approach_data'][0]['relative_velocity']['kilometers_per_second'] > $velocity;
         });
         return $filtered_asteroids;
     }
+
+    /**
+     * Handles the post request for re-listing asteroids with the inputted diameter
+     */
+    public function postAsteroidsByDiameter(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $diameter = $request['diameter'];
+        $data['diameter'] = $diameter;
+        $data['neo_asteroids_by_diameter'] = $this->getAsteroidsByDiameter($diameter);
+        return view('welcome', ['data' => $data]);
+    }
     
+    /**
+     * Handles the post request for re-listing asteroids with the inputted velocity
+     */
+    public function postAsteroidsByVelocity(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $velocity = $request['velocity'];
+        $data['velocity'] = $velocity;
+        $data['neo_asteroids_by_velocity'] = $this->getAsteroidsByVelocity($velocity);
+        return view('welcome', ['data' => $data]);
+    }
+
+    /**
+     * Handles the AJAX call for refreshing the list of X biggest asteroids
+     */
+    public function postGetXBiggest(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $temp_array = array_slice($this->sortBySize(1), 0, $request['x'], true);
+        if(count($temp_array) >= $request['x'])
+            $data['neo_biggest_asteroids'] = $temp_array;
+        return view('welcome', ['data' => $data]);
+    }
+
+    /**
+     * Handles the AJAX call for refreshing the list of X smallest asteroids
+     */
+    public function postGetXSmallest(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $temp_array = array_slice($this->sortBySize(0), 0, $request['x'], true);
+        if(count($temp_array) >= $request['x']) 
+            $data['neo_smallest_asteroids'] = $temp_array;
+        return view('welcome', ['data' => $data]);
+    }
+
+    /**
+     * Handles the AJAX call for refreshing the list of X fastest asteroids
+     */
+    public function postGetXFastest(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $temp_array = array_slice($this->sortByVelocity(1), 0, $request['x'], true);
+        if(count($temp_array) >= $request['x']) 
+            $data['neo_fastest_asteroids'] = $temp_array;
+        return view('welcome', ['data' => $data]);
+    }
+
+    /**
+     * Handles the AJAX call for refreshing the list of X slowest asteroids
+     */
+    public function postGetXSlowest(Request $request) {
+        global $data;
+        $this->getNEOdata();
+        $temp_array = array_slice($this->sortByVelocity(0), 0, $request['x'], true);
+        if(count($temp_array) >= $request['x']) 
+            $data['neo_slowest_asteroids'] = $temp_array;
+        return view('welcome', ['data' => $data]);
+    }
+
     /**
      * Accepts the NEOs data
      * Returns an array with key: reference_id, value: neo_object_array
      */
-    public function getAsteroids($neos) {
+    public function getAsteroids() {
+        global $neos;
         $asteroids = array();
         foreach($neos as $neo_group) {
             foreach($neo_group as $key => $neo) {

@@ -15,3 +15,35 @@ Route::get('/', [
     'uses' => 'AppController@getDashboard',
     'as' => 'dashboard'
 ]);
+
+Route::post('/byvelocity', [
+    'uses' => 'AppController@postAsteroidsByVelocity',
+    'as' => 'by.velocity'
+]);
+
+Route::post('/bydiameter', [
+    'uses' => 'AppController@postAsteroidsByDiameter',
+    'as' => 'by.diameter'
+]);
+
+Route::post('/get-x-biggest', [
+    'uses' => 'AppController@postGetXBiggest',
+    'as' => 'x.biggest'
+]);
+
+Route::post('/get-x-smallest', [
+    'uses' => 'AppController@postGetXSmallest',
+    'as' => 'x.smallest'
+]);
+
+Route::post('/get-x-fastest', [
+    'uses' => 'AppController@postGetXFastest',
+    'as' => 'x.fastest'
+]);
+
+Route::post('/get-x-slowest', [
+    'uses' => 'AppController@postGetXSlowest',
+    'as' => 'x.slowest'
+]);
+
+
