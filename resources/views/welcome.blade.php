@@ -83,16 +83,76 @@
                 </tbody>
             </table>
        </div>
-        <p>List of the 5 fastest asteroids: </p>
-        <ul>
-            <li>23dsd</li>
-            <li>443dsd</li>
-        </ul>
-        <p>List of the 5 slowest asteroids: </p>
-        <ul>
-            <li>23dsd</li>
-            <li>443dsd</li>
-        </ul>
+        <div class="my-5">
+            <h3>List of the 5 fastest asteroids: </h3>
+            <table class="table table-striped table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Reference ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Close Approach Date</th>
+                    <th scope="col">Relative Velocity (km/s)</th>
+                    <th scope="col">Miss Distance (km)</th>
+                    <th scope="col">Hazardous?</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($data['neo_fastest_asteroids'] as $asteroid)
+                    <tr>
+                        <th scope="row">
+                            <a href="{{ $asteroid['nasa_jpl_url'] }}">{{ $asteroid['neo_reference_id'] }}</a>
+                        </th>
+                        <td>
+                            <a href="{{ $asteroid['nasa_jpl_url'] }}">{{ $asteroid['name'] }}</a>
+                        </td>
+                        <td>{{ $asteroid['close_approach_data'][0]['close_approach_date'] }}</td>
+                        <td>{{ $asteroid['close_approach_data'][0]['relative_velocity']['kilometers_per_second'] }}</td>
+                        <td>{{ $asteroid['close_approach_data'][0]['miss_distance']['kilometers'] }}</td>
+                        @if ($asteroid['is_potentially_hazardous_asteroid'])
+                            <td>Yes</td>
+                        @else
+                            <td>No</td>
+                        @endif
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+       </div>
+        <div class="my-5">
+            <h3>List of the 5 slowest asteroids: </h3>
+            <table class="table table-striped table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Reference ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Close Approach Date</th>
+                    <th scope="col">Relative Velocity (km/s)</th>
+                    <th scope="col">Miss Distance</th>
+                    <th scope="col">Hazardous?</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($data['neo_slowest_asteroids'] as $asteroid)
+                    <tr>
+                        <th scope="row">
+                            <a href="{{ $asteroid['nasa_jpl_url'] }}">{{ $asteroid['neo_reference_id'] }}</a>
+                        </th>
+                        <td>
+                            <a href="{{ $asteroid['nasa_jpl_url'] }}">{{ $asteroid['name'] }}</a>
+                        </td>
+                        <td>{{ $asteroid['close_approach_data'][0]['close_approach_date'] }}</td>
+                        <td>{{ $asteroid['close_approach_data'][0]['relative_velocity']['kilometers_per_second'] }}</td>
+                        <td>{{ $asteroid['close_approach_data'][0]['miss_distance']['kilometers'] }}</td>
+                        @if ($asteroid['is_potentially_hazardous_asteroid'])
+                            <td>Yes</td>
+                        @else
+                            <td>No</td>
+                        @endif
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+       </div>
         <p>List of asteroids that have a diameter bigger or equal to 0.2 in kilometers.</p>
         <ul>
             <li>23dsd</li>

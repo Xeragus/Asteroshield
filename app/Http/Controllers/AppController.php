@@ -49,8 +49,8 @@ class AppController extends Controller
         $data['neo_hazardous_count'] = $this->getHazardous($neos);
         $data['neo_biggest_asteroids'] = array_slice($this->sortBySize($neos, 1), 0, 5, true);
         $data['neo_smallest_asteroids'] = array_slice($this->sortBySize($neos, 0), 0, 5, true);
-        // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 1), 0, 5, true);
-        // $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 0), -5, 5, true);
+        $data['neo_fastest_asteroids'] = array_slice($this->sortByVelocity($neos, 1), 0, 5, true);
+        $data['neo_slowest_asteroids'] = array_slice($this->sortByVelocity($neos, 0), 0, 5, true);
     }
 
     /**
@@ -84,8 +84,8 @@ class AppController extends Controller
      * The average of the min and max diameter determines the size of an asteroid
      */
     public function sortBySize($neos, $desc) {
-        $biggestX_obj = $this->getAsteroids($neos);
-        uasort($biggestX_obj, function($a, $b) use($desc) {
+        $sortedBySize = $this->getAsteroids($neos);
+        uasort($sortedBySize, function($a, $b) use($desc) {
             $a_diameter_average = ($a['estimated_diameter']['kilometers']['estimated_diameter_min'] + $a['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
             $b_diameter_average = ($b['estimated_diameter']['kilometers']['estimated_diameter_min'] + $b['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
             if ($a_diameter_average == $b_diameter_average) 
@@ -94,7 +94,36 @@ class AppController extends Controller
                 return ($a_diameter_average > $b_diameter_average) ? -1 : 1;        
             return ($a_diameter_average > $b_diameter_average) ? 1 : -1;    
         });
-        return $biggestX_obj;
+        return $sortedBySize;
+    }
+
+    /**
+     * Returns sorted array of asteroids by velocity - in descending order (if $desc is set)
+     */
+    public function sortByVelocity($neos, $desc) {
+        $sortedByVelocity = $this->getAsteroids($neos);
+        uasort($sortedByVelocity, function($a, $b) use($desc) {
+            $a_velocity = $a['close_approach_data'][0]['relative_velocity']['kilometers_per_second'];
+            $b_velocity = $b['close_approach_data'][0]['relative_velocity']['kilometers_per_second'];
+            if ($a_velocity == $b_velocity) 
+                return 0;
+            if($desc)
+                return ($a_velocity > $b_velocity) ? -1 : 1;        
+            return ($a_velocity > $b_velocity) ? 1 : -1;    
+        });
+        return $sortedByVelocity;
+    }
+
+    /**
+     * Returns a list of asteroids that have a diameter bigger or equal to $diameter km
+     */
+    public function getAsteroidsByDiameter($neos, $diameter) {
+        // $asteroids = $this->getAsteroids($neos);
+        $filtered_asteroids array_filter($this->getAsteroids($neos), function($value) use ($diameter) {
+            $a_diameter_average = ($a['estimated_diameter']['kilometers']['estimated_diameter_min'] + $a['estimated_diameter']['kilometers']['estimated_diameter_max']) / 2;
+            return $value[]
+        });
+        return $filtered_asteroids;
     }
     
     /**
