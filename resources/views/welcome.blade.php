@@ -9,9 +9,25 @@
         <p>Number of potentially hazardous asteroids: {{ $data["neo_hazardous_count"]  }} </p>
     </div> --}}
     <div class="p-5">
-        <p>Total number of near-Earth asteroids: {{ $data["neo_total_count"] }} </p>
-        <p>Number of potentially hazardous asteroids: {{ $data["neo_hazardous_count"]  }} </p>
-        <p>The asteroid that will hit us first: </p>
+        <div class="my-3 border border-light header-wrapper">
+            <div class="content-header-wrapper text-white text-center">
+                @if ($data['neo_hazardous_count'])
+                <div class="danger-wrapper bg-danger py-5">
+                    {{-- () --}}
+                    <h1>We are in danger!</h1>
+                    <p class="mb-0">Number of potentially hazardous asteroids: {{ $data["neo_hazardous_count"]  }} </p>
+                    <p class="mb-0">Total number of near-Earth asteroids: {{ $data["neo_total_count"] }} </p>
+                </div>
+                @else
+                <div class="safe-wrapper bg-success py-5">
+                    <h1>We are safe!</h1>
+                    <p class="mb-0">There are no hazardous asteroids.</p>
+                    <p class="mb-0">Total number of near-Earth asteroids: {{ $data["neo_total_count"] }} </p>
+                </div>
+                @endif
+            </div>
+        </div>
+        
         <div class="my-5 border border-light p-4 data-wrapper">
             <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between">
                 @csrf
@@ -186,18 +202,7 @@
             </table>
        </div>
         <div class="my-5 border border-light p-4 data-wrapper">
-            <form action="bydiameter" method="post" class="py-3 d-flex align-items-center justify-content-between">
-                @csrf
-                <p class="d-inline-block mb-0">List all asteroids with a diameter bigger or equal to
-                @if (isset($data['diameter']))
-                <input type="text" style="width: 130px;" class="text-center" name="diameter" value="{{ $data['diameter'] }}">
-                @else   
-                <input type="text" style="width: 130px;" class="text-center" name="diameter" value="0.2">
-                @endif
-                kilometers:
-                </p>  
-                <button class="btn btn-primary" type="submit"><i class="fas fa-sync-alt"></i></button>          
-            </form>
+            <p class="d-inline-block">List all asteroids with a diameter bigger or equal to 0.2 kilometers:</p>  
             @if ($data['neo_asteroids_by_diameter'])
             <table class="table table-striped table-sm">
                 <thead>
@@ -241,18 +246,7 @@
             @endif
        </div>
        <div class="my-5 border border-light p-4 data-wrapper">
-        <form action="byvelocity" method="post" class="py-3 d-flex align-items-center justify-content-between">
-            @csrf
-            <p class="d-inline-block mb-0">List all asteroids with velocity of more than
-            @if (isset($data['velocity']))
-                <input type="text" style="width: 130px;" class="text-center" name="velocity" value="{{ $data['velocity'] }}">
-            @else
-            <input type="text" style="width: 130px;" class="text-center" name="velocity" value="19.48">
-            @endif
-            kilometers per second:
-            </p>  
-            <button class="btn btn-primary" type="submit"><i class="fas fa-sync-alt"></i></button>          
-        </form>
+            <p class="d-inline-block">List all asteroids with velocity of more than 19.48 kilometers per second:</p>  
             @if ($data['neo_asteroids_by_velocity'])
             <table class="table table-striped table-sm">
                 <thead>

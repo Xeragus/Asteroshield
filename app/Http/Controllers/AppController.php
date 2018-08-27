@@ -23,23 +23,10 @@ class AppController extends Controller
      */
     public function getDashboard(Request $request)
     {   
-
-        // $this->getAPODdata($client, $data);
-        
         $this->getNEOdata();
         global $data;
         return view('welcome', ['data' => $data]);
     }
-
-    /**
-     * Accepts the api_key, the Guzzle HTTP client and the data array
-     * Uses the NASA APOD API to get the Astronomy Picture of the Day
-     */
-    // public function getAPODdata($client, &$data) {
-    //     $response = $client->request('GET', 'https://api.nasa.gov/planetary/apod?api_key=' . api_key);
-    //     $apod_body_array = json_decode($response->getBody(), true);
-    //     $data['apod_bg_url'] = $apod_body_array['hdurl'];
-    // }
 
     /**
      * Returns an array of near-Earth objects
@@ -154,30 +141,6 @@ class AppController extends Controller
             return $value['close_approach_data'][0]['relative_velocity']['kilometers_per_second'] > $velocity;
         });
         return $filtered_asteroids;
-    }
-
-    /**
-     * Handles the post request for re-listing asteroids with the inputted diameter
-     */
-    public function postAsteroidsByDiameter(Request $request) {
-        global $data;
-        $this->getNEOdata();
-        $diameter = $request['diameter'];
-        $data['diameter'] = $diameter;
-        $data['neo_asteroids_by_diameter'] = $this->getAsteroidsByDiameter($diameter);
-        return view('welcome', ['data' => $data]);
-    }
-    
-    /**
-     * Handles the post request for re-listing asteroids with the inputted velocity
-     */
-    public function postAsteroidsByVelocity(Request $request) {
-        global $data;
-        $this->getNEOdata();
-        $velocity = $request['velocity'];
-        $data['velocity'] = $velocity;
-        $data['neo_asteroids_by_velocity'] = $this->getAsteroidsByVelocity($velocity);
-        return view('welcome', ['data' => $data]);
     }
 
     /**
