@@ -1,3 +1,10 @@
+$(window).on('load', function(){
+    $('#changeXBiggest')[0].reset();
+    $('#changeXSmallest')[0].reset();
+    $('#changeXFastest')[0].reset();
+    $('#changeXSlowest')[0].reset();
+});
+
 /**
  * AJAX call to the controller to refresh the list of X biggest asteroids
  */

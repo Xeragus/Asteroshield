@@ -29,7 +29,7 @@
         </div>
         
         <div class="my-5 border border-light p-4 data-wrapper">
-            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between">
+            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between" id="changeXBiggest">
                 @csrf
                 <p class="d-inline-block mb-0">List the biggest
                 <input type="text" style="width: 50px;" class="text-center" id="xbiggest" name="xbiggest" value="5">
@@ -74,7 +74,7 @@
             </table>
         </div>
        <div class="my-5 border border-light p-4 data-wrapper">
-            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between">
+            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between" id="changeXSmallest">
                 @csrf
                 <p class="d-inline-block mb-0">List the smallest
                 <input type="text" style="width: 50px;" class="text-center" id="xsmallest" name="xsmallest" value="5">
@@ -118,7 +118,7 @@
             </table>
        </div>
         <div class="my-5 border border-light p-4 data-wrapper">
-            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between">
+            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between" id="changeXFastest">
                 @csrf
                 <p class="d-inline-block mb-0">List the fastest
                 <input type="text" style="width: 50px;" class="text-center" id="xfastest" name="xfastest" value="5">
@@ -160,7 +160,7 @@
             </table>
        </div>
         <div class="my-5 border border-light p-4 data-wrapper">
-            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between">
+            <form action="" method="post" class="py-3 d-flex align-items-center justify-content-between" id="changeXSlowest">
                 @csrf
                 <p class="d-inline-block mb-0">List the slowest
                 <input type="text" style="width: 50px;" class="text-center" id="xslowest" name="xslowest" value="5">
