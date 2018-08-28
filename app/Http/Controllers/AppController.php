@@ -205,4 +205,8 @@ class AppController extends Controller
         }
         return $asteroids;
     }
+
+    public function getNumber($number) {
+        return $number;
+    }
 }
